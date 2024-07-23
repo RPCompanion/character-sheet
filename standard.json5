@@ -1,20 +1,40 @@
 {
+    // (Required) The name of the ruleset
     name: "Standard",
+
+    // Must be three numbers, each with a value of 255 or less
     version: [1, 0, 0],
+
+    // (Required)
     description: "The standard rules for SWTOR character sheets",
 
     // The base stats for a character
     base_health: 10,
     base_armor_class: 7,
 
-    // The number of points a character starts with
-    attribute_points: 15,
-    skill_points: 20,
-    perk_points: 3,
+    /*
+    
+        attributes (required)
+        skills (optional)
+        perks (optional)
 
-    // The maximum number of points a character can allot to each category, outside of perks and specailties.
-    max_attribute_allotment: 5,
-    max_skill_allotment: 10,
+        given_points (required) specifies the number of points a character starts with in that category
+        max_points_per_allotment (optional) specifies the maximum number of points a character can allot to a single element in that category
+
+    */
+    allotments: {
+        attributes: {
+            given_points: 15,
+            max_points_per_allotment: 5
+        },
+        skills: {
+            given_points: 20,
+            max_points_per_allotment: 10
+        },
+        perks: {
+            given_points: 3
+        }
+    },
 
     /*
         pub struct Perk {
