@@ -4,7 +4,9 @@ pub mod weapon_proficiency;
 pub mod attributes;
 pub mod common;
 
+use attributes::Attribute;
 use perk::Perk;
+use weapon_proficiency::WeaponProficiency;
 
 /**
  * 
@@ -32,5 +34,7 @@ pub struct CharacterTemplate {
     pub base_armor_class: i32,
 
     pub allotments: Allotment,
-    pub perks: Option<Vec<Perk>>
+    pub weapon_proficiencies: Option<Vec<WeaponProficiency>>,
+    pub perks: Option<Vec<Perk>>,
+    pub attributes: Vec<Attribute>,
 }
