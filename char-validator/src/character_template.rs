@@ -34,7 +34,7 @@ pub struct CharacterTemplate {
     pub base_armor_class: i32,
 
     pub allotments: Allotment,
-    pub weapon_proficiencies: Option<Vec<WeaponProficiency>>,
+    pub weapon_proficiencies: Option<WeaponProficiency>,
     pub perks: Option<Vec<Perk>>,
     pub attributes: Vec<Attribute>,
 }
