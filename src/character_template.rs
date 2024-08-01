@@ -53,6 +53,7 @@ impl CharacterTemplate {
         sheet.validate()?;
         self.valid_template_name(sheet)?;
         self.valid_version(sheet)?;
+        self.valid_perks(sheet)?;
         self.valid_perk_allotment(sheet)?;
 
         Ok(())
@@ -83,7 +84,7 @@ impl CharacterTemplate {
 
     }
 
-    fn valid_perk_allotment(&self, sheet: &CharacterSheet) -> Result<(), &'static str> {
+    fn valid_perks(&self, sheet: &CharacterSheet) -> Result<(), &'static str> {
 
         if sheet.perks.is_none() {
             return Ok(());
@@ -102,6 +103,12 @@ impl CharacterTemplate {
             }
 
         }
+        
+        Ok(())
+
+    }
+
+    fn valid_perk_allotment(&self, sheet: &CharacterSheet) -> Result<(), &'static str> {
 
         if let Some(perk_points) = &self.allotments.perks {
 
