@@ -20,8 +20,8 @@ use crate::character_sheet::CharacterSheet;
 */
 #[derive(Serialize, Deserialize)]
 pub struct Points {
-    pub given_points: i32,
-    pub max_points_per_allotment: Option<i32>,
+    pub given_points: i64,
+    pub max_points_per_allotment: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -37,8 +37,8 @@ pub struct CharacterTemplate {
     pub version: [u8; 3],
     pub description: String,
 
-    pub base_health: i32,
-    pub base_armor_class: i32,
+    pub base_health: i64,
+    pub base_armor_class: i64,
 
     pub allotments: Allotment,
     pub weapon_proficiencies: Option<WeaponProficiency>,
@@ -55,6 +55,8 @@ impl CharacterTemplate {
         self.valid_version(sheet)?;
         self.valid_perks(sheet)?;
         self.valid_perk_allotment(sheet)?;
+        self.valid_attributes(sheet)?;
+        self.valid_attribute_allotment(sheet)?;
 
         Ok(())
 
@@ -129,7 +131,7 @@ impl CharacterTemplate {
             let template_perks = self.perks.as_ref().unwrap();
             let sheet_perks    = sheet.perks.as_ref().unwrap();
 
-            let total_points: i32 = sheet_perks
+            let total_points: i64 = sheet_perks
                 .iter()
                 .map(|p| {
 
@@ -146,6 +148,53 @@ impl CharacterTemplate {
                 return Err("Character template does not allow enough perk points");
             }
 
+        }
+
+        Ok(())
+
+    }
+
+    fn valid_attributes(&self, sheet: &CharacterSheet) -> Result<(), &'static str> {
+
+        for attribute in sheet.attributes.iter() {
+
+            if !self.attributes.iter().any(|ta| ta.name == attribute.name) {
+                return Err("Character template does not allow this attribute");
+            }
+
+        }
+
+        Ok(())
+
+    }
+
+    fn valid_attribute_allotment(&self, sheet: &CharacterSheet) -> Result<(), &'static str> {
+
+        let t_attr_points = &self.allotments.attributes;
+
+        let mut s_total_points: i64 = 0;
+        if let Some(max_points_per_allotment) = t_attr_points.max_points_per_allotment {
+
+            for s_attr in sheet.attributes.iter() {
+                
+                if s_attr.value > max_points_per_allotment {
+                    return Err("Character template does not allow this many points for a single attribute");
+                }
+
+                s_total_points += s_attr.value;
+            }
+
+        } else {
+
+            s_total_points = sheet.attributes
+                .iter()
+                .map(|a| a.value)
+                .sum();
+
+        }
+
+        if s_total_points > t_attr_points.given_points {
+            return Err("Character template does not allow enough attribute points");
         }
 
         Ok(())
