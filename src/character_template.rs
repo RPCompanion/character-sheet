@@ -102,6 +102,20 @@ impl CharacterTemplate {
                 return Err("Character template does not allow perks");
             }
 
+        } else if self.perks.is_some() && sheet.perks.is_some() {
+
+            let template_perks = self.perks.as_ref().unwrap();
+            let sheet_perks    = sheet.perks.as_ref().unwrap();
+
+            for perk in sheet_perks {
+
+                if !template_perks.iter().any(|tp| tp.name == *perk) {
+                    return Err("Character template does not allow this perk");
+                }
+
+            }
+
+
         }
         
         Ok(())
