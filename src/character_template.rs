@@ -10,6 +10,8 @@ use attributes::Attribute;
 use perk::Perk;
 use weapon_proficiency::WeaponProficiency;
 
+use crate::character_sheet::CharacterSheet;
+
 /**
  * 
  * How many points a character has for a particular attribute/skill/perk
@@ -42,4 +44,40 @@ pub struct CharacterTemplate {
     pub weapon_proficiencies: Option<WeaponProficiency>,
     pub perks: Option<Vec<Perk>>,
     pub attributes: Vec<Attribute>,
+}
+
+impl CharacterTemplate {
+
+    pub fn validate(&self, sheet: &CharacterSheet) -> Result<(), &'static str> {
+
+        sheet.validate()?;
+
+        if !self.valid_template_name(sheet) {
+            return Err("Character template name mismatch");
+        }
+
+        if self.valid_version(sheet) {
+            return Err("Character template version mismatch");
+        }
+
+        Ok(())
+
+    }
+
+    fn valid_template_name(&self, sheet: &CharacterSheet) -> bool {
+
+        sheet.template.name == self.name
+
+    }
+
+    fn valid_version(&self, sheet: &CharacterSheet) -> bool {
+
+        if sheet.template.version.len() != self.version.len() {
+            return false;
+        }
+
+        self.version.iter().eq(sheet.template.version.iter())
+
+    }
+
 }
