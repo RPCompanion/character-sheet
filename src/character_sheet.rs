@@ -55,6 +55,7 @@ impl CharacterSheet {
 
 #[derive(Error, Debug)]
 pub enum CharacterSheetError {
+    
     #[error("Description too long")]
     DescriptionTooLong,
     #[error("Character template name mismatch")]
@@ -77,6 +78,11 @@ pub enum CharacterSheetError {
         allotted_points: i64,
         max_points: i64,
     },
+    #[error("Character template does not allow negative attribute points for {offending_attribute:0} attribute")]
+    NegativeAttributePoints {
+        offending_attribute: String,
+        points: i64
+    },
     #[error("Character template does not allow {0} attribute points")]
     AttributePointsExceeded(i64),
 
@@ -89,6 +95,11 @@ pub enum CharacterSheetError {
         skill: String,
         allotted_points: i64,
         max_points: i64,
+    },
+    #[error("Character template does not allow negative skill points for {offending_skill:0} skill")]
+    NegativeSkillPoints {
+        offending_skill: String,
+        points: i64
     },
     #[error("Character template does not allow {0} skill points")]
     SkillPointsExceeded(i64),

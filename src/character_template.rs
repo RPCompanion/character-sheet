@@ -25,7 +25,7 @@ pub struct Points {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct Allottment {
+pub struct Allotment {
     pub attributes: Points,
     pub skills: Option<Points>,
     pub perks: Option<Points>,
@@ -40,15 +40,23 @@ pub struct CharacterTemplate {
     pub base_health: i64,
     pub base_armor_class: i64,
 
-    pub allottments: Allottment,
+    pub allotments: Allotment,
     pub weapon_proficiencies: Option<WeaponProficiency>,
     pub perks: Option<Vec<Perk>>,
     pub attributes: Vec<Attribute>,
 }
 
+pub enum CharacterTemplateError {
+
+}
+
 impl CharacterTemplate {
 
-    pub fn validate(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
+    pub fn validate(&self) -> Result<(), CharacterTemplateError> {
+        Ok(())
+    }
+
+    pub fn validate_sheet(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
 
         sheet.validate()?;
         self.valid_template_name(sheet)?;
@@ -58,6 +66,7 @@ impl CharacterTemplate {
         self.valid_attributes(sheet)?;
         self.valid_attribute_allottment(sheet)?;
         self.valid_skills(sheet)?;
+        self.valid_skill_allottment(sheet)?;
 
         Ok(())
 
@@ -127,7 +136,7 @@ impl CharacterTemplate {
 
     fn valid_perk_allottment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
 
-        if let Some(perk_points) = &self.allottments.perks {
+        if let Some(perk_points) = &self.allotments.perks {
 
             let template_perks = self.perks.as_ref().unwrap();
             let sheet_perks    = sheet.perks.as_ref().unwrap();
@@ -171,9 +180,10 @@ impl CharacterTemplate {
 
     fn valid_attribute_allottment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
 
-        let t_attr_points = &self.allottments.attributes;
+        let t_attr_points = &self.allotments.attributes;
 
         let mut s_total_points: i64 = 0;
+
         if let Some(max_points_per_allotment) = t_attr_points.max_points_per_allotment {
 
             for s_attr in sheet.attributes.iter() {
@@ -185,6 +195,7 @@ impl CharacterTemplate {
                         max_points: max_points_per_allotment,
                     });
                 }
+                todo!("Check for negative attribute points");
 
                 s_total_points += s_attr.value;
             }
@@ -236,6 +247,43 @@ impl CharacterTemplate {
 
             }
 
+        }
+
+        Ok(())
+
+    }
+
+    fn valid_skill_allottment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
+
+        let mut s_total_points: i64 = 0;
+        let s_allotments = self.allotments.skills.as_ref().unwrap();
+        for attribute in sheet.attributes.iter() {
+
+            let sheet_skills = attribute.skills.as_ref();
+            if sheet_skills.is_none() {
+                continue;
+            }
+
+            let sheet_skills = sheet_skills.unwrap();
+
+            if let Some(offending_skill) = sheet_skills.iter().find(|s| s.value < 0) {
+
+                return Err(CharacterSheetError::NegativeSkillPoints {
+                    offending_skill: attribute.name.clone(),
+                    points: offending_skill.value,
+                });
+
+            }
+
+            s_total_points += sheet_skills
+                .iter()
+                .map(|s| s.value)
+                .sum::<i64>();
+
+        }
+
+        if s_total_points > s_allotments.given_points {
+            return Err(CharacterSheetError::SkillPointsExceeded(s_total_points));
         }
 
         Ok(())
