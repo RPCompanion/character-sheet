@@ -1,5 +1,6 @@
 
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 pub mod config;
 
@@ -36,12 +37,12 @@ pub struct CharacterSheet {
 
 impl CharacterSheet {
 
-    pub fn validate(&self) -> Result<(), &'static str> {
+    pub fn validate(&self) -> Result<(), CharacterSheetError> {
 
         if let Some(description) = &self.description {
 
             if config::get_character_sheet_config().max_description_length >= (description.len() as i32) {
-                return Err("Description too long");
+                return Err(CharacterSheetError::DescriptionTooLong);
             }
 
         }
@@ -50,4 +51,30 @@ impl CharacterSheet {
 
     }
 
+}
+
+#[derive(Error, Debug)]
+pub enum CharacterSheetError {
+    #[error("Description too long")]
+    DescriptionTooLong,
+    #[error("Character template name mismatch")]
+    NameMismatch,
+    #[error("Character template version mismatch")]
+    VersionMismatch,
+    #[error("Character template does not allow perks")]
+    PerksNotAllowed,
+    #[error("Character template does not allow {0} as a perk")]
+    PerkNotAllowed(String),
+    #[error("Character template does not allow {0} perk points")]
+    NotEnoughPerkPoints(i64),
+    #[error("Character template does not allow {0} as an attribute")]
+    AttributeNotAllowed(String),
+    #[error("Character template does not allow this many points for a single attribute")]
+    TooManyAttributePoints {
+        attribute: String,
+        allotted_points: i64,
+        max_points: i64,
+    },
+    #[error("Character template does not allow {0} attribute points")]
+    AttributePointsExceeded(i64) 
 }
