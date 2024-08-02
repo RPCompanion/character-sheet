@@ -61,12 +61,14 @@ pub enum CharacterSheetError {
     NameMismatch,
     #[error("Character template version mismatch")]
     VersionMismatch,
+
     #[error("Character template does not allow perks")]
     PerksNotAllowed,
     #[error("Character template does not allow {0} as a perk")]
     PerkNotAllowed(String),
     #[error("Character template does not allow {0} perk points")]
     NotEnoughPerkPoints(i64),
+
     #[error("Character template does not allow {0} as an attribute")]
     AttributeNotAllowed(String),
     #[error("Character template does not allow this many points for a single attribute")]
@@ -76,5 +78,19 @@ pub enum CharacterSheetError {
         max_points: i64,
     },
     #[error("Character template does not allow {0} attribute points")]
-    AttributePointsExceeded(i64) 
+    AttributePointsExceeded(i64),
+
+    #[error("Character template does not allow {0} as a skill")]
+    SkillNotAllowed(String),
+    #[error("Character template requires skills array for {0} attribute")]
+    SkillsMissingInAttribute(String),
+    #[error("Character template does not allow this many points for a single skill")]
+    TooManySkillPoints {
+        skill: String,
+        allotted_points: i64,
+        max_points: i64,
+    },
+    #[error("Character template does not allow {0} skill points")]
+    SkillPointsExceeded(i64),
+
 }

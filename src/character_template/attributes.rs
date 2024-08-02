@@ -13,6 +13,6 @@ pub struct Skill {
 pub struct Attribute {
     pub name: String,
     pub description: String,
-    pub skills: Vec<Skill>,
+    pub skills: Option<Vec<Skill>>,
     pub required: Option<Requirements>
 }

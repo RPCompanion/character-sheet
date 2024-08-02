@@ -57,6 +57,7 @@ impl CharacterTemplate {
         self.valid_perk_allottment(sheet)?;
         self.valid_attributes(sheet)?;
         self.valid_attribute_allottment(sheet)?;
+        self.valid_skills(sheet)?;
 
         Ok(())
 
@@ -199,6 +200,42 @@ impl CharacterTemplate {
 
         if s_total_points > t_attr_points.given_points {
             return Err(CharacterSheetError::AttributePointsExceeded(s_total_points));
+        }
+
+        Ok(())
+
+    }
+
+    fn valid_skills(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
+
+        for attribute in sheet.attributes.iter() {
+
+            let template_attribute = self.attributes
+                .iter()
+                .find(|ta| ta.name == attribute.name)
+                .unwrap();
+
+            let sheet_skills = attribute.skills.as_ref();
+            if sheet_skills.is_none() {
+
+                if template_attribute.skills.is_none() {
+                    continue;   
+                }
+                return Err(CharacterSheetError::SkillsMissingInAttribute(attribute.name.clone()));
+
+            }
+
+            let sheet_skills    = sheet_skills.unwrap();
+            let template_skills = template_attribute.skills.as_ref().unwrap();
+
+            for skill in sheet_skills {
+
+                if !template_skills.iter().any(|ts| ts.name == skill.name) {
+                    return Err(CharacterSheetError::SkillNotAllowed(skill.name.clone()));
+                }
+
+            }
+
         }
 
         Ok(())
