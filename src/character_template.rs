@@ -6,11 +6,11 @@ pub mod weapon_proficiency;
 pub mod attributes;
 pub mod common;
 
-use attributes::{Attribute, Skill};
+use attributes::Attribute;
 use perk::Perk;
 use weapon_proficiency::WeaponProficiency;
 
-use crate::character_sheet::{self, CharacterSheet, CharacterSheetError};
+use crate::character_sheet::{CharacterSheet, CharacterSheetError};
 
 /**
  * 
@@ -181,11 +181,9 @@ impl CharacterTemplate {
     fn valid_attribute_allotment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
 
         let t_attr_points = &self.allotments.attributes;
-
-        let mut s_total_points: i64 = 0;
         let max_points_per_allotment =  t_attr_points.max_points_per_allotment.unwrap_or(i64::MAX);
 
-        s_total_points = sheet.attributes
+        let s_total_points = sheet.attributes
             .iter()
             .try_fold(0i64, |acc, attr| {
 
