@@ -6,11 +6,11 @@ pub mod weapon_proficiency;
 pub mod attributes;
 pub mod common;
 
-use attributes::Attribute;
+use attributes::{Attribute, Skill};
 use perk::Perk;
 use weapon_proficiency::WeaponProficiency;
 
-use crate::character_sheet::{CharacterSheet, CharacterSheetError};
+use crate::character_sheet::{self, CharacterSheet, CharacterSheetError};
 
 /**
  * 
@@ -62,11 +62,11 @@ impl CharacterTemplate {
         self.valid_template_name(sheet)?;
         self.valid_version(sheet)?;
         self.valid_perks(sheet)?;
-        self.valid_perk_allottment(sheet)?;
+        self.valid_perk_allotment(sheet)?;
         self.valid_attributes(sheet)?;
-        self.valid_attribute_allottment(sheet)?;
+        self.valid_attribute_allotment(sheet)?;
         self.valid_skills(sheet)?;
-        self.valid_skill_allottment(sheet)?;
+        self.valid_skill_allotment(sheet)?;
 
         Ok(())
 
@@ -134,7 +134,7 @@ impl CharacterTemplate {
 
     }
 
-    fn valid_perk_allottment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
+    fn valid_perk_allotment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
 
         if let Some(perk_points) = &self.allotments.perks {
 
@@ -178,36 +178,39 @@ impl CharacterTemplate {
 
     }
 
-    fn valid_attribute_allottment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
+    fn valid_attribute_allotment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
 
         let t_attr_points = &self.allotments.attributes;
 
         let mut s_total_points: i64 = 0;
+        let max_points_per_allotment =  t_attr_points.max_points_per_allotment.unwrap_or(i64::MAX);
 
-        if let Some(max_points_per_allotment) = t_attr_points.max_points_per_allotment {
+        s_total_points = sheet.attributes
+            .iter()
+            .try_fold(0i64, |acc, attr| {
 
-            for s_attr in sheet.attributes.iter() {
-                
-                if s_attr.value > max_points_per_allotment {
+                if attr.value < 0 {
+
+                    return Err(CharacterSheetError::NegativeAttributePoints {
+                        offending_attribute: attr.name.clone(),
+                        points: attr.value,
+                    });
+
+                }
+
+                if attr.value > max_points_per_allotment {
+
                     return Err(CharacterSheetError::TooManyAttributePoints {
-                        attribute: s_attr.name.clone(),
-                        allotted_points: s_attr.value,
+                        attribute: attr.name.clone(),
+                        allotted_points: attr.value,
                         max_points: max_points_per_allotment,
                     });
+
                 }
-                todo!("Check for negative attribute points");
 
-                s_total_points += s_attr.value;
-            }
+                Ok(acc + attr.value)
 
-        } else {
-
-            s_total_points = sheet.attributes
-                .iter()
-                .map(|a| a.value)
-                .sum();
-
-        }
+            })?;
 
         if s_total_points > t_attr_points.given_points {
             return Err(CharacterSheetError::AttributePointsExceeded(s_total_points));
@@ -253,10 +256,12 @@ impl CharacterTemplate {
 
     }
 
-    fn valid_skill_allottment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
+    fn valid_skill_allotment(&self, sheet: &CharacterSheet) -> Result<(), CharacterSheetError> {
 
         let mut s_total_points: i64 = 0;
-        let s_allotments = self.allotments.skills.as_ref().unwrap();
+        let t_allotments = self.allotments.skills.as_ref().unwrap();
+        let max_points_per_allotment = t_allotments.max_points_per_allotment.unwrap_or(i64::MAX);
+
         for attribute in sheet.attributes.iter() {
 
             let sheet_skills = attribute.skills.as_ref();
@@ -265,24 +270,36 @@ impl CharacterTemplate {
             }
 
             let sheet_skills = sheet_skills.unwrap();
-
-            if let Some(offending_skill) = sheet_skills.iter().find(|s| s.value < 0) {
-
-                return Err(CharacterSheetError::NegativeSkillPoints {
-                    offending_skill: attribute.name.clone(),
-                    points: offending_skill.value,
-                });
-
-            }
-
             s_total_points += sheet_skills
                 .iter()
-                .map(|s| s.value)
-                .sum::<i64>();
+                .try_fold(0i64, |acc, skill| {
+
+                    if skill.value < 0 {
+
+                        return Err(CharacterSheetError::NegativeSkillPoints {
+                            offending_skill: attribute.name.clone(),
+                            points: skill.value,
+                        });
+
+                    }
+
+                    if skill.value > max_points_per_allotment {
+
+                        return Err(CharacterSheetError::TooManySkillPoints {
+                            skill: skill.name.clone(),
+                            allotted_points: skill.value,
+                            max_points: max_points_per_allotment,
+                        });
+
+                    }
+
+                    Ok(acc + skill.value)
+
+                })?;
 
         }
 
-        if s_total_points > s_allotments.given_points {
+        if s_total_points > t_allotments.given_points {
             return Err(CharacterSheetError::SkillPointsExceeded(s_total_points));
         }
 
