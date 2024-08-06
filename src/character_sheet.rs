@@ -39,9 +39,33 @@ impl CharacterSheet {
 
     pub fn validate(&self) -> Result<(), CharacterSheetError> {
 
+        self.validate_name()?;
+        self.validate_description()?;
+        Ok(())
+
+    }
+
+    pub fn validate_name(&self) -> Result<(), CharacterSheetError> {
+
+        let name_conf = &config::get_character_sheet_config().name;
+
+        if self.name.len() < name_conf.min_length as usize {
+            return Err(CharacterSheetError::NameTooShort);
+        }
+
+        if self.name.len() > name_conf.max_length as usize {
+            return Err(CharacterSheetError::NameTooLong);
+        }
+
+        Ok(())
+
+    }
+
+    fn validate_description(&self) -> Result<(), CharacterSheetError> {
+
         if let Some(description) = &self.description {
 
-            if config::get_character_sheet_config().max_description_length >= (description.len() as i32) {
+            if config::get_character_sheet_config().description.max_length >= (description.len() as i32) {
                 return Err(CharacterSheetError::DescriptionTooLong);
             }
 
@@ -53,9 +77,14 @@ impl CharacterSheet {
 
 }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq)]
 pub enum CharacterSheetError {
     
+    #[error("Name too short")]
+    NameTooShort,
+    #[error("Name too long")]
+    NameTooLong,
+
     #[error("Description too long")]
     DescriptionTooLong,
     #[error("Character template name mismatch")]

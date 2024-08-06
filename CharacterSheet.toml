@@ -1,1 +1,3 @@
 
+name = { min_length = 3, max_length = 38 }
+description = { max_length = 2048 }

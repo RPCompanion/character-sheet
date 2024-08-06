@@ -10,7 +10,7 @@ use attributes::Attribute;
 use perk::Perk;
 use weapon_proficiency::WeaponProficiency;
 
-use crate::character_sheet::{CharacterSheet, CharacterSheetError};
+use crate::character_sheet::{self, CharacterSheet, CharacterSheetError};
 
 /**
  * 
@@ -51,6 +51,43 @@ pub enum CharacterTemplateError {
 }
 
 impl CharacterTemplate {
+
+    pub fn get_base_character_sheet(&self) -> CharacterSheet {
+
+        CharacterSheet {
+            name: String::new(),
+            template: character_sheet::Template {
+                name: self.name.clone(),
+                version: self.version.clone(),
+            },   
+            description: None,
+            health: self.base_health,
+            armor_class: self.base_armor_class,
+            weapon_proficiencies: vec![],
+            perks: self.perks.as_ref().map(|_| vec![]),
+            attributes: self.attributes.iter().map(|a| {
+
+                character_sheet::Attribute {
+
+                    name: a.name.clone(),
+                    value: 0,
+                    skills: a.skills.as_ref().map(|s| {
+                        s.iter().map(|s| {
+                            character_sheet::Skill {
+                                name: s.name.clone(),
+                                value: 0,
+                            }
+                        }).collect()
+                    })
+
+                }  
+
+            })
+            .collect()
+
+        }
+
+    }
 
     pub fn validate(&self) -> Result<(), CharacterTemplateError> {
         Ok(())
@@ -304,5 +341,52 @@ impl CharacterTemplate {
         Ok(())
 
     }
+
+}
+
+
+#[cfg(test)]
+mod sheet_validation_tests {
+
+    use crate::character_sheet::CharacterSheetError;
+    use crate::character_sheet::config;
+    use super::*;
+
+    use json5;
+
+    const STANDARD_TEMPLATE_STR: &str = include_str!("../standard.json5");
+
+    #[test]
+    pub fn deserialization() {
+        assert!(json5::from_str::<CharacterTemplate>(STANDARD_TEMPLATE_STR).is_ok());
+    }
+
+    #[test]
+    pub fn short_name_test() {
+
+        let template: CharacterTemplate = json5::from_str(STANDARD_TEMPLATE_STR).unwrap();
+        let sheet = template.get_base_character_sheet();
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::NameTooShort);
+
+    }
+
+    #[test]
+    pub fn long_name_test() {
+
+        let template: CharacterTemplate = json5::from_str(STANDARD_TEMPLATE_STR).unwrap();
+        let mut sheet = template.get_base_character_sheet();
+
+        let config = config::get_character_sheet_config();
+        sheet.name = (0..config.description.max_length+1).map(|_| 'a').collect();
+
+        let response = template.validate_sheet(&sheet);
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::NameTooLong);
+
+    }
+    
 
 }

@@ -3,8 +3,20 @@ use std::sync::OnceLock;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+pub struct CharacterNameConfig {
+    pub min_length: i32,
+    pub max_length: i32
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CharacterDescriptionConfig {
+    pub max_length: i32
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct CharacterSheetConfig {
-    pub max_description_length: i32,
+    pub name: CharacterNameConfig,
+    pub description: CharacterDescriptionConfig
 }
 
 const RAW_CHARACTER_SHEET_CONFIG: &str = include_str!("../../CharacterSheet.toml");
