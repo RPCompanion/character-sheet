@@ -380,7 +380,7 @@ mod sheet_validation_tests {
         let mut sheet = template.get_base_character_sheet();
 
         let config = config::get_character_sheet_config();
-        sheet.name = (0..config.description.max_length+1).map(|_| 'a').collect();
+        sheet.name = (0..config.name.max_length+1).map(|_| 'a').collect();
 
         let response = template.validate_sheet(&sheet);
         assert!(response.is_err());
