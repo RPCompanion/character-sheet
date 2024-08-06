@@ -356,16 +356,43 @@ mod sheet_validation_tests {
 
     const STANDARD_TEMPLATE_STR: &str = include_str!("../standard.json5");
 
+    fn get_unfailable_sheet(template: &CharacterTemplate) -> CharacterSheet {
+
+        let mut sheet = template.get_base_character_sheet();
+
+        let config = config::get_character_sheet_config();
+        sheet.name = (0..config.name.min_length).map(|_| 'a').collect();
+        sheet
+
+    }
+
+    fn get_template_and_sheet() -> (CharacterTemplate, CharacterSheet) {
+
+        let template: CharacterTemplate = json5::from_str(STANDARD_TEMPLATE_STR).unwrap();
+        let sheet = get_unfailable_sheet(&template);
+
+        (template, sheet)
+
+    }
+
     #[test]
-    pub fn deserialization() {
+    fn deserialization() {
         assert!(json5::from_str::<CharacterTemplate>(STANDARD_TEMPLATE_STR).is_ok());
     }
 
     #[test]
-    pub fn short_name_test() {
+    fn unfailable_sheet_test() {
 
-        let template: CharacterTemplate = json5::from_str(STANDARD_TEMPLATE_STR).unwrap();
-        let sheet = template.get_base_character_sheet();
+        let (template, sheet) = get_template_and_sheet();
+        let response = template.validate_sheet(&sheet);
+        assert!(response.is_ok());
+
+    }
+
+    #[test]
+    fn short_name_test() {
+
+        let (template, sheet) = get_template_and_sheet();
         let response = template.validate_sheet(&sheet);
 
         assert!(response.is_err());
@@ -374,10 +401,9 @@ mod sheet_validation_tests {
     }
 
     #[test]
-    pub fn long_name_test() {
+    fn long_name_test() {
 
-        let template: CharacterTemplate = json5::from_str(STANDARD_TEMPLATE_STR).unwrap();
-        let mut sheet = template.get_base_character_sheet();
+        let (template, mut sheet) = get_template_and_sheet();
 
         let config = config::get_character_sheet_config();
         sheet.name = (0..config.name.max_length+1).map(|_| 'a').collect();
@@ -385,6 +411,46 @@ mod sheet_validation_tests {
         let response = template.validate_sheet(&sheet);
         assert!(response.is_err());
         assert_eq!(response.unwrap_err(), CharacterSheetError::NameTooLong);
+
+    }
+
+    #[test]
+    fn template_name_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+        sheet.template.name = "Not the same name".to_string();
+
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::NameMismatch);
+
+    }
+
+    #[test]
+    fn template_version_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+        sheet.template.version = [0, 0, 0];
+
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::VersionMismatch);
+
+    }
+
+    #[test]
+    fn perks_not_allowed_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        sheet.perks = Some(vec!["Perk".to_string()]);
+
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::PerkNotAllowed("Perk".to_string()));
 
     }
     
