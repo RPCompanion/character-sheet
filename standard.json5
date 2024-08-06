@@ -77,6 +77,23 @@
             ]
         },
         {
+            name: "Charismatic",
+            description: "Your natural charm makes you more persuasive and likable, easily influencing others",
+            point_cost: 2,
+            attributes: [
+                {
+                    name: "Authority",
+                    modifier: 2
+                }
+            ],
+            skills: [
+                {
+                    name: "Persuasion",
+                    modifier: 3
+                }
+            ]
+        },
+        {
             name: "Honest Face",
             description: "You have a trustworthy face, giving you a penalty to Deception",
             point_cost: -1,

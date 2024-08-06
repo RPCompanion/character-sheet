@@ -117,6 +117,11 @@ pub enum CharacterSheetError {
 
     #[error("Character template does not allow {0} as a skill")]
     SkillNotAllowed(String),
+    #[error("Character template does not have these skills at all. Is this an old sheet?")]
+    SheetSkillsNotPresentInTemplateAttribute{
+        attribute: String,
+        skills: Vec<String>
+    },
     #[error("Character template requires skills array for {0} attribute")]
     SkillsMissingInAttribute(String),
     #[error("Character template does not allow this many points for a single skill")]

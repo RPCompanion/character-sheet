@@ -264,18 +264,29 @@ impl CharacterTemplate {
                 .find(|ta| ta.name == attribute.name)
                 .unwrap();
 
+
             let sheet_skills = attribute.skills.as_ref();
             if sheet_skills.is_none() {
 
                 if template_attribute.skills.is_none() {
                     continue;   
                 }
+
                 return Err(CharacterSheetError::SkillsMissingInAttribute(attribute.name.clone()));
+            }
+
+            // If I've gotten here, then the sheet has skills for this attribute and the template might not.
+            if template_attribute.skills.is_none() && sheet_skills.is_some_and(|s| !s.is_empty()) {
+                
+                return Err(CharacterSheetError::SheetSkillsNotPresentInTemplateAttribute{
+                    attribute: attribute.name.clone(),
+                    skills: sheet_skills.unwrap().iter().map(|s| s.name.clone()).collect()
+                });
 
             }
 
             let sheet_skills    = sheet_skills.unwrap();
-            let template_skills = template_attribute.skills.as_ref().unwrap();
+            let template_skills = dbg!(template_attribute.skills.as_ref().unwrap());
 
             for skill in sheet_skills {
 
@@ -392,9 +403,10 @@ mod sheet_validation_tests {
     #[test]
     fn short_name_test() {
 
-        let (template, sheet) = get_template_and_sheet();
-        let response = template.validate_sheet(&sheet);
+        let (template, mut sheet) = get_template_and_sheet();
+        sheet.name   = "".to_string();
 
+        let response = template.validate_sheet(&sheet);
         assert!(response.is_err());
         assert_eq!(response.unwrap_err(), CharacterSheetError::NameTooShort);
 
@@ -453,6 +465,104 @@ mod sheet_validation_tests {
         assert_eq!(response.unwrap_err(), CharacterSheetError::PerkNotAllowed("Perk".to_string()));
 
     }
-    
+
+    #[test]
+    fn perks_not_enough_points_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        sheet.perks = Some(vec!["Force Sensitive".to_string(), "Small Frame".to_string(), "Charismatic".to_string()]);
+
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::NotEnoughPerkPoints(5));
+
+    }
+
+    #[test]
+    fn attribute_not_allowed_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        sheet.attributes.push(character_sheet::Attribute {
+            name: "Not an attribute".to_string(),
+            value: 0,
+            skills: None,
+        });
+
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::AttributeNotAllowed("Not an attribute".to_string()));
+
+    }
+
+    #[test]
+    fn attribute_points_exceeded_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        let max_points_per_allotment = &template.allotments.attributes.max_points_per_allotment;
+        let given_points = template.allotments.attributes.given_points;
+
+        sheet.attributes
+            .iter_mut()
+            .for_each(|a| a.value = max_points_per_allotment.unwrap_or(given_points));
+
+        let points_assigned = sheet.attributes
+            .iter()
+            .map(|a| a.value)
+            .sum::<i64>();
+
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::AttributePointsExceeded(points_assigned));
+
+    }
+
+    #[test]
+    fn attribute_too_many_points_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        sheet.attributes[0].value = template.allotments.attributes.given_points + 1;
+
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::TooManyAttributePoints {
+            attribute: sheet.attributes[0].name.clone(),
+            allotted_points: template.allotments.attributes.given_points + 1,
+            max_points: template.allotments.attributes.max_points_per_allotment.unwrap_or(i64::MAX),
+        });
+
+    }
+
+    #[test]
+    fn skills_not_allowed_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        sheet.attributes[0].skills = Some(vec![
+            character_sheet::Skill {
+                name: "Not a skill".to_string(),
+                value: 0,
+            }
+        ]);
+
+        let response = template.validate_sheet(&sheet);
+        let expected_error = CharacterSheetError::SheetSkillsNotPresentInTemplateAttribute { 
+            attribute: sheet.attributes[0].name.clone(),
+            skills: vec!["Not a skill".to_string()]
+        };
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), expected_error);
+
+    }
+
+    // TODO: Test for skill points exceeded
 
 }
