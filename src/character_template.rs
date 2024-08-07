@@ -541,6 +541,23 @@ mod sheet_validation_tests {
     }
 
     #[test]
+    fn negative_attribute_points_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        sheet.attributes[0].value = -1;
+
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), CharacterSheetError::NegativeAttributePoints {
+            offending_attribute: sheet.attributes[0].name.clone(),
+            points: -1,
+        });
+
+    }
+
+    #[test]
     fn skills_not_allowed_test() {
 
         let (template, mut sheet) = get_template_and_sheet();
@@ -563,6 +580,94 @@ mod sheet_validation_tests {
 
     }
 
-    // TODO: Test for skill points exceeded
+    #[test]
+    fn skill_points_exceeded_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        let max_points_per_allotment = template.allotments.skills.as_ref().unwrap().max_points_per_allotment;
+        let given_points = template.allotments.skills.as_ref().unwrap().given_points;
+
+        let attr = sheet.attributes
+            .iter_mut()
+            .find(|f| {
+                f.skills.as_ref().is_some_and(|f| !f.is_empty())
+            });
+
+        if attr.is_none() {
+            panic!("No attribute with skills found, unable to test skill points exceeded");
+        }
+
+        let attr = attr.unwrap();
+        attr.skills.as_mut().unwrap()[0].value = max_points_per_allotment.unwrap_or(given_points) + 1;
+
+        let expected_response = CharacterSheetError::TooManySkillPoints { 
+            skill: attr.skills.as_ref().unwrap()[0].name.clone(), 
+            allotted_points: max_points_per_allotment.unwrap_or(given_points) + 1, 
+            max_points: max_points_per_allotment.unwrap_or(i64::MAX)
+        };
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), expected_response);
+
+    }
+
+    #[test]
+    fn negative_skill_points_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        let attr = sheet.attributes
+            .iter_mut()
+            .find(|f| {
+                f.skills.as_ref().is_some_and(|f| !f.is_empty())
+            });
+
+        if attr.is_none() {
+            panic!("No attribute with skills found, unable to test negative skill points");
+        }
+
+        let attr = attr.unwrap();
+        attr.skills.as_mut().unwrap()[0].value = -1;
+
+        let expected_response = CharacterSheetError::NegativeSkillPoints { 
+            offending_skill: attr.name.clone(), 
+            points: -1 
+        };
+
+        let response = template.validate_sheet(&sheet);
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), expected_response);
+
+    }
+
+    #[test]
+    fn skills_too_many_points_test() {
+
+        let (template, mut sheet) = get_template_and_sheet();
+
+        let max_points_per_allotment = template.allotments.skills.as_ref().unwrap().max_points_per_allotment;
+        let given_points = template.allotments.skills.as_ref().unwrap().given_points;
+        let skill_value = max_points_per_allotment.unwrap_or(given_points);
+
+        let mut total_points_allocated: i64 = 0;
+        sheet.attributes
+            .iter_mut()
+            .filter(|attr| {
+                attr.skills.as_ref().is_some_and(|f| !f.is_empty())
+            })
+            .for_each(|s| {
+                s.skills.as_mut().unwrap()[0].value = skill_value;
+                total_points_allocated += skill_value;
+            });
+
+        let expected_response = CharacterSheetError::SkillPointsExceeded(total_points_allocated);
+        let response = template.validate_sheet(&sheet);
+
+        assert!(response.is_err());
+        assert_eq!(response.unwrap_err(), expected_response);
+
+    }
 
 }
