@@ -98,6 +98,11 @@ pub enum CharacterSheetError {
     PerkNotAllowed(String),
     #[error("Character template does not allow {0} perk points")]
     NotEnoughPerkPoints(i64),
+    #[error("Character template does not allow more than {max_perks} perks, but {selected_perks} were selected")]
+    TooManyPerks {
+        selected_perks: i64,
+        max_perks: i64
+    },
 
     #[error("Character template does not allow {0} as an attribute")]
     AttributeNotAllowed(String),
@@ -107,7 +112,7 @@ pub enum CharacterSheetError {
         allotted_points: i64,
         max_points: i64,
     },
-    #[error("Character template does not allow negative attribute points for {offending_attribute:0} attribute")]
+    #[error("Character template does not allow negative attribute points for {offending_attribute} attribute")]
     NegativeAttributePoints {
         offending_attribute: String,
         points: i64
@@ -130,7 +135,7 @@ pub enum CharacterSheetError {
         allotted_points: i64,
         max_points: i64,
     },
-    #[error("Character template does not allow negative skill points for {offending_skill:0} skill")]
+    #[error("Character template does not allow negative skill points for {offending_skill} skill")]
     NegativeSkillPoints {
         offending_skill: String,
         points: i64

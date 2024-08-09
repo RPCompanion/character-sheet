@@ -25,10 +25,16 @@ pub struct Points {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct PerkPoints {
+    pub given_points: i64,
+    pub max_perks: Option<i64>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct Allotment {
     pub attributes: Points,
     pub skills: Option<Points>,
-    pub perks: Option<Points>,
+    pub perks: Option<PerkPoints>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -177,6 +183,10 @@ impl CharacterTemplate {
 
             let template_perks = self.perks.as_ref().unwrap();
             let sheet_perks    = sheet.perks.as_ref().unwrap();
+
+            if sheet_perks.len() > perk_points.max_perks.unwrap_or(i64::MAX) as usize {
+                return Err(CharacterSheetError::TooManyPerks { selected_perks: sheet_perks.len() as i64, max_perks: perk_points.max_perks.unwrap() });
+            }
 
             let total_points: i64 = sheet_perks
                 .iter()
