@@ -2,18 +2,18 @@
 use std::sync::OnceLock;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct CharacterNameConfig {
     pub min_length: i32,
     pub max_length: i32
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct CharacterDescriptionConfig {
     pub max_length: i32
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct CharacterSheetConfig {
     pub name: CharacterNameConfig,
     pub description: CharacterDescriptionConfig
