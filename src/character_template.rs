@@ -296,7 +296,7 @@ impl CharacterTemplate {
             }
 
             let sheet_skills    = sheet_skills.unwrap();
-            let template_skills = dbg!(template_attribute.skills.as_ref().unwrap());
+            let template_skills = template_attribute.skills.as_ref().unwrap();
 
             for skill in sheet_skills {
 
