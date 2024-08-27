@@ -1,7 +1,7 @@
 
 use thiserror::Error;
 
-use crate::character_sheet::config;
+use crate::character_sheet::config::CHARACTER_SHEET_CONFIG;
 use crate::character_template::CharacterTemplate;
 use crate::character_sheet::CharacterSheet;
 
@@ -112,7 +112,7 @@ impl<'a> CharacterSheetValidator<'a> {
 
     pub fn validate_character_name(&self) -> Result<(), CharacterSheetError> {
 
-        let name_conf = &config::get_character_sheet_config().name;
+        let name_conf = CHARACTER_SHEET_CONFIG.name;
 
         if self.sheet.name.len() < name_conf.min_length as usize {
             return Err(CharacterSheetError::NameTooShort);
@@ -130,7 +130,7 @@ impl<'a> CharacterSheetValidator<'a> {
     
         if let Some(description) = &self.sheet.description {
 
-            if (description.len() as i32) > config::get_character_sheet_config().description.max_length {
+            if (description.len() as i32) > CHARACTER_SHEET_CONFIG.description.max_length {
                 return Err(CharacterSheetError::DescriptionTooLong);
             }
 
@@ -396,7 +396,7 @@ impl<'a> CharacterSheetValidator<'a> {
 mod sheet_validation_tests {
 
     use crate::character_sheet;
-    use crate::character_sheet::config;
+    use crate::character_sheet::config::CHARACTER_SHEET_CONFIG;
     use super::*;
 
     use json5;
@@ -407,7 +407,7 @@ mod sheet_validation_tests {
 
         let mut sheet = template.get_base_character_sheet();
 
-        let config = config::get_character_sheet_config();
+        let config = *CHARACTER_SHEET_CONFIG;
         sheet.name = (0..config.name.min_length).map(|_| 'a').collect();
         sheet
 
@@ -458,7 +458,7 @@ mod sheet_validation_tests {
 
         let (template, mut sheet) = get_template_and_sheet();
 
-        let config = config::get_character_sheet_config();
+        let config = *CHARACTER_SHEET_CONFIG;
         sheet.name = (0..config.name.max_length+1).map(|_| 'a').collect();
 
         let validator = CharacterSheetValidator::new(&template, &sheet);

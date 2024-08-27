@@ -1,5 +1,5 @@
 
-use std::sync::OnceLock;
+use std::sync::LazyLock;
 use serde::{Deserialize, Serialize};
 
 #[cfg(target_arch = "wasm32")]
@@ -26,12 +26,7 @@ pub struct CharacterSheetConfig {
 }
 
 static RAW_CHARACTER_SHEET_CONFIG: &str = include_str!("../../CharacterSheet.toml");
-static CHARACTER_SHEET_CONFIG: OnceLock<CharacterSheetConfig> = OnceLock::new();
 
-pub fn get_character_sheet_config() -> &'static CharacterSheetConfig {
-
-    CHARACTER_SHEET_CONFIG.get_or_init(|| {
-        toml::from_str(RAW_CHARACTER_SHEET_CONFIG).unwrap()
-    })
-
-}
+pub static CHARACTER_SHEET_CONFIG: LazyLock<CharacterSheetConfig> = LazyLock::new(|| {
+    toml::from_str(RAW_CHARACTER_SHEET_CONFIG).unwrap()
+});
