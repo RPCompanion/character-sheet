@@ -65,7 +65,7 @@ impl CharacterSheet {
 
         if let Some(description) = &self.description {
 
-            if config::get_character_sheet_config().description.max_length >= (description.len() as i32) {
+            if (description.len() as i32) > config::get_character_sheet_config().description.max_length {
                 return Err(CharacterSheetError::DescriptionTooLong);
             }
 
