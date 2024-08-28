@@ -532,7 +532,7 @@ mod sheet_validation_tests {
 
         let (template, mut sheet) = get_template_and_sheet();
 
-        sheet.attributes.push(character_sheet::Attribute {
+        sheet.attributes.push(character_sheet::SheetAttribute {
             name: "Not an attribute".to_string(),
             value: 0,
             skills: None,
@@ -614,7 +614,7 @@ mod sheet_validation_tests {
         let (template, mut sheet) = get_template_and_sheet();
 
         sheet.attributes[0].skills = Some(vec![
-            character_sheet::Skill {
+            character_sheet::SheetSkill {
                 name: "Not a skill".to_string(),
                 value: 0,
             }

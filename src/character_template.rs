@@ -13,7 +13,7 @@ use attributes::Attribute;
 use perk::Perk;
 use weapon_proficiency::WeaponProficiency;
 
-use crate::character_sheet::{self, CharacterSheet};
+use crate::{character_sheet::{self, CharacterSheet}, InternalVersion};
 
 /**
  * 
@@ -21,21 +21,21 @@ use crate::character_sheet::{self, CharacterSheet};
  * and how many points they can allocate to a single attribute/skill/perk
  * 
 */
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Points {
     pub given_points: i64,
     pub max_points_per_allotment: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct PerkPoints {
     pub given_points: i64,
     pub max_perks: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Allotment {
     pub attributes: Points,
@@ -43,11 +43,11 @@ pub struct Allotment {
     pub perks: Option<PerkPoints>,
 }
 
-#[derive(Serialize, Deserialize)]
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(getter_with_clone))]
 pub struct CharacterTemplate {
     pub name: String,
-    pub version: [u8; 3],
+    pub version: InternalVersion,
     pub description: String,
 
     pub base_health: i64,
@@ -62,11 +62,17 @@ pub struct CharacterTemplate {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 impl CharacterTemplate {
 
+    pub fn from_str(json: String) -> Result<CharacterTemplate, String> {
+
+        Ok(serde_json::from_str(&json).map_err(|_| "Failed to parse JSON".to_string())?)
+
+    }
+
     pub fn get_base_character_sheet(&self) -> CharacterSheet {
 
         CharacterSheet {
             name: String::new(),
-            template: character_sheet::Template {
+            template: character_sheet::SheetTemplate {
                 name: self.name.clone(),
                 version: self.version.clone(),
             },   
@@ -77,13 +83,13 @@ impl CharacterTemplate {
             perks: self.perks.as_ref().map(|_| vec![]),
             attributes: self.attributes.iter().map(|a| {
 
-                character_sheet::Attribute {
+                character_sheet::SheetAttribute {
 
                     name: a.name.clone(),
                     value: 0,
                     skills: a.skills.as_ref().map(|s| {
                         s.iter().map(|s| {
-                            character_sheet::Skill {
+                            character_sheet::SheetSkill {
                                 name: s.name.clone(),
                                 value: 0,
                             }

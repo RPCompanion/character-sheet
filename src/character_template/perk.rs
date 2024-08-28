@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use super::common::{AttributeModifier, SkillModifier};
 
-#[derive(Serialize, Deserialize)]
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+#[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen(getter_with_clone))]
 pub struct Perk {
     pub name: String,
     pub description: String,
