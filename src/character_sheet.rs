@@ -2,42 +2,48 @@
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-
+#[cfg(not(target_arch = "wasm32"))]
 use serde::{Deserialize, Serialize};
+
+use crate::{InteralString, InternalVersion};
 
 pub mod config;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Template {
-    pub name: String,
-    pub version: [u8; 3]
+    pub name: InteralString,
+    pub version: InternalVersion
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Skill {
-    pub name: String,
+    pub name: InteralString,
     pub value: i64
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Attribute {
-    pub name: String,
+    pub name: InteralString,
     pub value: i64,
     pub skills: Option<Vec<Skill>>
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct CharacterSheet {
-    pub name: String,
+    pub name: InteralString,
     pub template: Template,
-    pub description: Option<String>,
+    pub description: Option<InteralString>,
     pub health: i64,
     pub armor_class: i64,
-    pub weapon_proficiencies: Vec<String>,
-    pub perks: Option<Vec<String>>,    
+    pub weapon_proficiencies: Vec<InteralString>,
+    pub perks: Option<Vec<InteralString>>,    
     pub attributes: Vec<Attribute>
 }

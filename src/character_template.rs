@@ -1,7 +1,14 @@
 
 #[cfg(target_arch = "wasm32")]
+use wasm_bindgen::convert::IntoWasmAbi;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::convert::{FromWasmAbi, ReturnWasmAbi};
+
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
+#[cfg(not(target_arch = "wasm32"))]
 use serde::{Deserialize, Serialize};
 
 pub mod perk;
@@ -14,6 +21,7 @@ use perk::Perk;
 use weapon_proficiency::WeaponProficiency;
 
 use crate::character_sheet::{self, CharacterSheet};
+use crate::{InteralString, InternalVersion};
 
 /**
  * 
@@ -21,21 +29,24 @@ use crate::character_sheet::{self, CharacterSheet};
  * and how many points they can allocate to a single attribute/skill/perk
  * 
 */
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Points {
     pub given_points: i64,
     pub max_points_per_allotment: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct PerkPoints {
     pub given_points: i64,
     pub max_perks: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Allotment {
     pub attributes: Points,
@@ -43,12 +54,13 @@ pub struct Allotment {
     pub perks: Option<PerkPoints>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct CharacterTemplate {
-    pub name: String,
-    pub version: [u8; 3],
-    pub description: String,
+    pub name: InteralString,
+    pub version: InternalVersion,
+    pub description: InteralString,
 
     pub base_health: i64,
     pub base_armor_class: i64,

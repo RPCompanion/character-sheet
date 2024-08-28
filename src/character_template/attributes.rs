@@ -1,18 +1,21 @@
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
+#[cfg(not(target_arch = "wasm32"))]
 use serde::{Deserialize, Serialize};
 
 use super::common::Requirements;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Skill {
     pub name: String,
     pub description: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Serialize, Deserialize))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Attribute {
     pub name: String,
