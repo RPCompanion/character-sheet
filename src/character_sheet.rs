@@ -41,3 +41,12 @@ pub struct CharacterSheet {
     pub perks: Option<Vec<String>>,    
     pub attributes: Vec<SheetAttribute>
 }
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+impl CharacterSheet {
+
+    pub fn as_json_str(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }
+
+}
