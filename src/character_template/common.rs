@@ -8,28 +8,28 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(getter_with_clone))]
 pub struct AttributeModifier {
     pub name: String,
-    pub modifier: i32,
+    pub modifier: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(getter_with_clone))]
 pub struct SkillModifier {
     pub name: String,
-    pub modifier: i32,
+    pub modifier: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(getter_with_clone))]
 pub struct AttributeRequirement {
     pub name: String,
-    pub greater_than_or_equal_to: i32,
+    pub greater_than_or_equal_to: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(getter_with_clone))]
 pub struct SkillRequirement {
     pub name: String,
-    pub greater_than_or_equal_to: i32,
+    pub greater_than_or_equal_to: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
