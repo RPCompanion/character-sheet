@@ -62,7 +62,8 @@ pub struct CharacterTemplate {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 impl CharacterTemplate {
 
-    pub fn from_str(json: String) -> Result<CharacterTemplate, String> {
+    /// Deserialize a JSON string into a CharacterTemplate
+    pub fn from_json_str(json: String) -> Result<CharacterTemplate, String> {
 
         Ok(serde_json::from_str(&json).map_err(|_| "Failed to parse JSON".to_string())?)
 

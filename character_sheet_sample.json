@@ -1,0 +1,62 @@
+{
+    "name": "Elizala",
+    "perks": ["Charismatic", "Small Frame"],
+    "health": 10,
+    "template": { "name": "Standard", "version": [1, 0, 0] },
+    "attributes": [
+        { "name": "Strength", "value": 0, "skills": null },
+        {
+            "name": "Prowess",
+            "value": 1,
+            "skills": [
+                { "name": "Endurance", "value": 0 },
+                { "name": "Resistance", "value": 0 },
+                { "name": "Recovery", "value": 0 }
+            ]
+        },
+        {
+            "name": "Agility",
+            "value": 4,
+            "skills": [
+                { "name": "Stealth", "value": 0 },
+                { "name": "Acrobatics", "value": 0 },
+                { "name": "Sleight of Hand", "value": 0 }
+            ]
+        },
+        {
+            "name": "Charisma",
+            "value": 5,
+            "skills": [
+                { "name": "Persuasion", "value": 3 },
+                { "name": "Deception", "value": 4 }
+            ]
+        },
+        { "name": "Endurance", "value": 0, "skills": null },
+        {
+            "name": "Resourcefulness",
+            "value": 5,
+            "skills": [
+                { "name": "Engineering", "value": 0 },
+                { "name": "Medicine", "value": 10 },
+                { "name": "Sense Motive", "value": 3 },
+                { "name": "Piloting", "value": 0 },
+                { "name": "Survival", "value": 0 }
+            ]
+        },
+        {
+            "name": "Force",
+            "value": 0,
+            "skills": [
+                { "name": "Force Sense", "value": 0 },
+                { "name": "Force Push", "value": 0 },
+                { "name": "Force Pull", "value": 0 },
+                { "name": "Force Jump", "value": 0 },
+                { "name": "Force Heal", "value": 0 },
+                { "name": "Force Lightning", "value": 0 }
+            ]
+        }
+    ],
+    "armor_class": 7,
+    "description": "This is the most amazing character description!!!",
+    "weapon_proficiencies": ["Pistol"]
+}

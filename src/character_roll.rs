@@ -8,7 +8,7 @@ use crate::character_template::common::{AttributeModifier, SkillModifier};
 use crate::character_template::CharacterTemplate;
 
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq)]
 pub enum RollError {
     #[error("Invalid attribute {0}")]
     InvalidAttribute(String),
@@ -50,7 +50,7 @@ pub struct CharacterRoll<'a> {
     roll_type: RollTarget
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CharacterRollResult {
     pub target: String,
     pub value: i64,
@@ -169,6 +169,67 @@ impl<'a> CharacterRoll<'a> {
         };
 
         modifier
+
+    }
+
+}
+
+#[cfg(test)]
+mod character_roll_tests {
+
+    use std::sync::LazyLock;
+    use super::*;
+
+    const STANDARD_TEMPLATE_STR: &str = include_str!("../standard.json");
+    static STANDARD_TEMPLATE: LazyLock<CharacterTemplate> = LazyLock::new(|| {
+        CharacterTemplate::from_json_str(STANDARD_TEMPLATE_STR.to_string()).unwrap()
+    });
+
+    const CHARACTER_SHEET_SAMPLE_STR: &str = include_str!("../character_sheet_sample.json");
+    static CHARACTER_SHEET_SAMPLE: LazyLock<CharacterSheet> = LazyLock::new(|| {
+        serde_json::from_str(CHARACTER_SHEET_SAMPLE_STR).unwrap()
+    });
+
+    #[test]
+    fn test_roll_attribute() {
+
+        let character = CharacterRoll {
+            template: &STANDARD_TEMPLATE,
+            sheet: &CHARACTER_SHEET_SAMPLE,
+            roll_type: RollTarget::Attribute("Strength".to_string())
+        };
+
+        let roll = character.roll();
+        assert!(roll.is_ok());
+
+    }
+
+    #[test]
+    fn test_roll_fake_attribute() {
+
+        let character = CharacterRoll {
+            template: &STANDARD_TEMPLATE,
+            sheet: &CHARACTER_SHEET_SAMPLE,
+            roll_type: RollTarget::Attribute("Fake".to_string())
+        };
+
+        let roll = character.roll();
+        assert!(roll.is_err());
+        assert!(roll.unwrap_err() == RollError::InvalidAttribute("Fake".to_string()));
+
+    }
+
+    #[test]
+    fn test_roll_skill() {
+
+        let character = CharacterRoll {
+            template: &STANDARD_TEMPLATE,
+            sheet: &CHARACTER_SHEET_SAMPLE,
+            roll_type: RollTarget::Skill("Acrobatics".to_string())
+        };
+
+        let roll = dbg!(character.roll());
+        assert!(roll.is_ok());
 
     }
 
