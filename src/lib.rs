@@ -4,6 +4,7 @@ use wasm_bindgen::prelude::*;
 
 pub mod character_template;
 pub mod character_sheet;
+pub mod character_roll;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod character_sheet_validator;
