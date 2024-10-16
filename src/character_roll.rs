@@ -16,7 +16,7 @@ pub enum RollError {
     InvalidSkill(String)
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum RollTarget {
     Attribute(String),
     Skill(String)
