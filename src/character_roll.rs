@@ -45,9 +45,9 @@ impl RollTarget {
 }
 
 pub struct CharacterRoll<'a> {
-    template: &'a CharacterTemplate,
-    sheet: &'a CharacterSheet,
-    roll_type: RollTarget
+    pub template: &'a CharacterTemplate,
+    pub sheet: &'a CharacterSheet,
+    pub roll_type: RollTarget
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -61,11 +61,13 @@ pub struct CharacterRollResult {
 impl<'a> CharacterRoll<'a> {
 
     pub fn new(template: &'a CharacterTemplate, sheet: &'a CharacterSheet, roll_type: RollTarget) -> Self {
+
         Self {
             template,
             sheet,
             roll_type
         }
+        
     }
 
     pub fn roll(&self) -> Result<CharacterRollResult, RollError> {
